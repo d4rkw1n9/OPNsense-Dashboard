@@ -1,16 +1,16 @@
 #!/usr/local/bin/php-cgi -f
 <?php
+
 require_once("config.inc");
 require_once("interfaces.inc");
 require_once("plugins.inc.d/dpinger.inc");
 require_once("util.inc");
 
-
-
-
-# Added function get_interface_info. Function was removed from interface.in in OPNsense version 24.1
-function get_interfaces_info($include_unlinked = false)
-{
+/**
+ * Function: get_interfaces_info
+ * Description: Gathers detailed interface information.
+ */
+function get_interfaces_info($include_unlinked = false) {
     global $config;
 
     $all_intf_details = legacy_interfaces_details();
@@ -20,6 +20,7 @@ function get_interfaces_info($include_unlinked = false)
     $result = [];
     $interfaces = legacy_config_get_interfaces(['virtual' => false]);
     $known_interfaces = [];
+
     foreach (array_keys($interfaces) as $ifdescr) {
         $interfaces[$ifdescr]['if'] = get_real_interface($ifdescr);
         if (!empty($interfaces[$ifdescr]['if'])) {
@@ -50,7 +51,7 @@ function get_interfaces_info($include_unlinked = false)
         if (!empty($all_intf_details[$ifinfo['if']])) {
             if (
                 isset($all_intf_details[$ifinfo['if']]['status']) &&
-                    in_array($all_intf_details[$ifinfo['if']]['status'], array('active', 'running'))
+                in_array($all_intf_details[$ifinfo['if']]['status'], array('active', 'running'))
             ) {
                 $all_intf_details[$ifinfo['if']]['status'] = $ifinfo['status'];
             }
@@ -58,7 +59,7 @@ function get_interfaces_info($include_unlinked = false)
         }
 
         if (!empty($ifinfo['ipv4'])) {
-            list ($primary4,, $bits4) = interfaces_primary_address($ifdescr, $all_intf_details);
+            list($primary4, , $bits4) = interfaces_primary_address($ifdescr, $all_intf_details);
             if (!empty($primary4)) {
                 $ifinfo['ipaddr'] = $primary4;
                 $ifinfo['subnet'] = $bits4;
@@ -77,7 +78,7 @@ function get_interfaces_info($include_unlinked = false)
         }
 
         if (!empty($ifinfo['ipv6'])) {
-            list ($primary6,, $bits6) = interfaces_primary_address6($ifdescr, $all_intf_details);
+            list($primary6, , $bits6) = interfaces_primary_address6($ifdescr, $all_intf_details);
             if (!empty($primary6)) {
                 $ifinfo['ipaddrv6'] = $primary6;
                 $ifinfo['subnetv6'] = $bits6;
@@ -93,7 +94,7 @@ function get_interfaces_info($include_unlinked = false)
 
             $aux = shell_safe('/usr/local/sbin/ifctl -6pi %s', $ifinfo['ifv6']);
             if (!empty($aux)) {
-                $ifinfo['prefixv6'] = explode("\n", $aux);
+                $ifinfo['prefixv6'] = explode("\\n", $aux);
             }
         }
 
@@ -223,7 +224,6 @@ function get_interfaces_info($include_unlinked = false)
     return $result;
 }
 
-
 $host = gethostname();
 $source = "pfconfig";
 
@@ -292,7 +292,7 @@ foreach ($iflist as $ifname => $friendly) {
 }
 
 $gw_array = (new \OPNsense\Routing\Gateways(legacy_interfaces_details()))->gatewaysIndexedByName();
-//$gw_statuses is not guarranteed to contain the same number of gateways as $gw_array
+//$gw_statuses is not guaranteed to contain the same number of gateways as $gw_array
 $gw_statuses = return_gateways_status();
 
 $debug = false;
@@ -367,5 +367,5 @@ foreach ($gw_array as $gw => $gateway) {
         floatval($loss),
         $status
     );
-};
+}
 ?>
